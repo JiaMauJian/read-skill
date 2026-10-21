@@ -48,7 +48,6 @@ function invocationHint(s) {
   const { user, model } = s.invocation;
   if (user && !model) return "這個 skill 關掉了自動觸發，所以 description 只要說清楚「做什麼」，不必寫「什麼時候用」。Claude 不會自己挑它，要你主動打指令。";
   if (!user) return "這是給 Claude 參考的背景知識，通常是被其他 skill 點名引用，或在符合 description 的情境下載入。你在 / 選單裡看不到它。";
-  if (!s.description.when) return "這段 description 沒有明確的「Use when…」觸發句，Claude 只能從「做什麼」去推測何時使用，觸發會比較不穩定。";
   return "Claude 平常只看得到這段文字。它會拿你說的話和「何時用」比對，符合就載入整份 SKILL.md。所以讀 skill 要先讀這裡。";
 }
 
@@ -160,7 +159,7 @@ function annotate(root, skill) {
   for (const el of root.querySelectorAll("code, strong")) {
     if (el.closest("pre") || el.children.length) continue;
     const target = findSkill(el.textContent, skill);
-    if (target) { el.replaceWith(link(`#/skill/${target.id}`, "skill-ref", el.textContent, target.description.what || target.description.when)); continue; }
+    if (target) { el.replaceWith(link(`#/skill/${target.id}`, "skill-ref", el.textContent, String(target.frontmatter.description ?? ""))); continue; }
     const file = el.tagName === "CODE" && findFile(el.textContent, skill);
     if (file) el.replaceWith(fileLink(file, el.textContent));
   }
@@ -420,8 +419,8 @@ async function renderSkill(id) {
 
   <div class="card"><h3>① 什麼時候會用到它（description）</h3>
     <div class="split">
-      <div class="what"><span class="label">做什麼</span>${esc(s.description.what || "（沒寫，直接從觸發條件開始）")}</div>
-      <div class="when"><span class="label">何時用</span>${esc(s.description.when || "（沒寫）")}</div>
+      <div class="what"><span class="label">做什麼</span><span id="desc-what" class="hint">Claude 讀 description 整理中…</span></div>
+      <div class="when"><span class="label">何時用</span><span id="desc-when" class="hint">第一次大約要 10～30 秒，之後會記住。</span></div>
     </div>
     <p class="hint">💡 ${invocationHint(s)}</p>
   </div>
@@ -484,11 +483,29 @@ async function renderSkill(id) {
   $("#note").addEventListener("input", save);
   $("#done").addEventListener("change", () => { save(); renderSidebar(id); });
   $("#rules-toggle").addEventListener("change", (e) => document.body.classList.toggle("no-rules", !e.target.checked));
-  const runZh = () => translateIn(body, $("#zh-status"), [...document.querySelectorAll("#main .what, #main .when")]);
+  const runZh = () => translateIn(body, $("#zh-status"));
   setZh(zhPref());
   $("#zh-btn").addEventListener("click", () => { setZh(!zhPref()); if (zhPref()) runZh(); });
   if (zhPref()) runZh();
   $("#flow-btn").addEventListener("click", () => drawFlow(s));
+  describeIn(s);
+}
+
+async function describeIn(s) {
+  const show = (el, text, hint) => { el.textContent = text; el.className = hint ? "hint" : ""; };
+  try {
+    const res = await fetch(`/api/describe?id=${encodeURIComponent(s.id)}`, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    if (window.currentSkill !== s) return;
+    const { what, when } = data.results;
+    show($("#desc-what"), what || "（description 沒說）", !what);
+    show($("#desc-when"), when || "（description 沒說什麼時候用，Claude 只能自己猜，觸發會比較不穩定）", !when);
+  } catch (e) {
+    if (window.currentSkill !== s) return;
+    show($("#desc-what"), "整理失敗：" + e.message + "。原文在下面的 frontmatter 裡。", true);
+    show($("#desc-when"), "", true);
+  }
 }
 
 let mermaidLib;
