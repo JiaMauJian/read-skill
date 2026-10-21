@@ -280,10 +280,14 @@ function fileLink(path, text) {
 
 // ---------- sidebar ----------
 
+const nameHit = (s) => !!filters.q && s.name.toLowerCase().includes(filters.q.toLowerCase());
+
+// Name matches come first, then description-only matches.
 function visible() {
   const q = filters.q.toLowerCase();
-  return skills.filter((s) => filters.plugins.has(s.plugin) && MODES[filters.mode].test(s) &&
-    (!q || s.name.includes(q) || String(s.frontmatter.description ?? "").toLowerCase().includes(q)));
+  const list = skills.filter((s) => filters.plugins.has(s.plugin) && MODES[filters.mode].test(s) &&
+    (!q || nameHit(s) || String(s.frontmatter.description ?? "").toLowerCase().includes(q)));
+  return [...list.filter(nameHit), ...list.filter((s) => !nameHit(s))];
 }
 
 function renderSidebar(currentId) {
@@ -293,8 +297,14 @@ function renderSidebar(currentId) {
   const list = visible();
   const done = list.filter((s) => notes[s.id]?.done).length;
   $("#progress").textContent = `顯示 ${list.length} 個 · 已讀懂 ${done} 個`;
-  let html = "", lastGroup = null;
+  let html = "", lastGroup = null, lastHit = null;
+  const hits = list.filter(nameHit).length;
   for (const s of list) {
+    if (filters.q && nameHit(s) !== lastHit) {
+      lastHit = nameHit(s);
+      html += `<li class="sec">${lastHit ? `名稱符合 · ${hits}` : `說明裡提到 · ${list.length - hits}`}</li>`;
+      lastGroup = null;
+    }
     const group = s.plugin + (s.category ? " / " + s.category : "");
     if (group !== lastGroup) { html += `<li class="cat">${esc(group)}</li>`; lastGroup = group; }
     const tag = !s.invocation.user ? "📚" : !s.invocation.model ? "👤" : "";
