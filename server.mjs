@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { exec } from "node:child_process";
 import { loadSkills, readSupportingFile } from "./lib/skills.mjs";
 import { translate } from "./lib/translate.mjs";
+import { flowchart } from "./lib/flow.mjs";
 
 const PUBLIC = join(dirname(fileURLToPath(import.meta.url)), "public");
 const PORT = Number(process.env.PORT) || 4321;
@@ -35,6 +36,10 @@ createServer(async (req, res) => {
       const s = byId().get(url.searchParams.get("id"));
       if (!s) return json(res, 404, { error: "not found" });
       return json(res, 200, { content: await readSupportingFile(s, url.searchParams.get("path")) });
+    }
+    if (url.pathname === "/api/flow" && req.method === "POST") {
+      const s = byId().get(url.searchParams.get("id"));
+      return s ? json(res, 200, await flowchart(s)) : json(res, 404, { error: "not found" });
     }
     if (url.pathname === "/api/translate" && req.method === "POST") {
       let raw = "";

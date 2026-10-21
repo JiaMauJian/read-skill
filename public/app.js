@@ -205,6 +205,7 @@ function annotate(root, skill) {
 // ---------- translation ----------
 
 const zhPref = () => document.body.classList.contains("show-zh");
+const claudeFailed = (what, e) => `${what}失敗：${e.message}。請確認終端機可以執行 claude 指令。`;
 
 function textOf(el) {
   if (el.tagName === "TR") return [...el.cells].map((c) => c.textContent.trim()).join(" | ");
@@ -218,7 +219,8 @@ function zhBox(r) {
   div.className = "zh";
   div.innerHTML = `<div class="zh-t">${esc(r.zh)}</div>` +
     (r.plain ? `<div class="zh-p">💡 <b>白話</b>　${esc(r.plain)}</div>` : "") +
-    (r.why ? `<div class="zh-w">🤔 <b>為什麼</b> <span class="src src-${r.whyFrom === "原文" ? "orig" : "guess"}" title="${r.whyFrom === "原文" ? "skill 原文自己寫了這個理由" : "原文沒寫理由，這是 Claude 推測作者的用意"}">${r.whyFrom === "原文" ? "原文有寫" : "推測"}</span>　${esc(r.why)}</div>` : "");
+    (r.why ? `<div class="zh-w">🤔 <b>為什麼</b> <span class="src src-${r.whyFrom === "原文" ? "orig" : "guess"}" title="${r.whyFrom === "原文" ? "skill 原文自己寫了這個理由" : "原文沒寫理由，這是 Claude 推測作者的用意"}">${r.whyFrom === "原文" ? "原文有寫" : "推測"}</span>　${esc(r.why)}</div>` : "") +
+    (r.code ? `<div class="zh-c">🧑‍💻 <b>程式碼對照</b><pre><code>${esc(r.code)}</code></pre></div>` : "");
   return div;
 }
 
@@ -254,7 +256,7 @@ async function translateIn(container, status, extra = []) {
     status.textContent = data.cached ? "✓ 已顯示中文（之前翻過）" : "✓ 翻譯完成，已存起來";
   } catch (e) {
     els.forEach((el) => delete el.dataset.zh);
-    status.textContent = `翻譯失敗：${e.message}。請確認終端機可以執行 claude 指令。`;
+    status.textContent = claudeFailed("翻譯", e);
   }
 }
 
@@ -424,6 +426,11 @@ async function renderSkill(id) {
     <p class="hint">類型猜測「${kind}」：${kindWhy}</p>
   </div>
 
+  <div class="card"><h3>🗺️ 流程圖</h3>
+    <div class="toolbar"><button id="flow-btn">畫出這個 skill 的流程</button><span id="flow-status" class="hint"></span></div>
+    <div id="flow"></div>
+  </div>
+
   <h2>④ 正文</h2>
   <div class="toolbar">
     <button class="zh-toggle" id="zh-btn"></button><span id="zh-status"></span>
@@ -471,6 +478,36 @@ async function renderSkill(id) {
   setZh(zhPref());
   $("#zh-btn").addEventListener("click", () => { setZh(!zhPref()); if (zhPref()) runZh(); });
   if (zhPref()) runZh();
+  $("#flow-btn").addEventListener("click", () => drawFlow(s));
+}
+
+let mermaidLib;
+async function drawFlow(s) {
+  const status = $("#flow-status"), out = $("#flow"), btn = $("#flow-btn");
+  btn.disabled = true;
+  status.textContent = "畫圖中… 第一次大約要 10～60 秒，之後會記住。";
+  try {
+    const res = await fetch(`/api/flow?id=${encodeURIComponent(s.id)}`, { method: "POST" });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    if (window.currentSkill !== s) return;
+    const { mermaid: src, summary } = data.results;
+    btn.hidden = true;
+    status.textContent = "";
+    if (!src) { out.innerHTML = `<p class="hint">這份 skill 不是步驟流程，沒有圖可畫。${esc(summary)}</p>`; return; }
+    mermaidLib ??= (await import("https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.esm.min.mjs")).default;
+    mermaidLib.initialize({ startOnLoad: false, theme: matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "default" });
+    let svg;
+    try {
+      ({ svg } = await mermaidLib.render(`flow-${Date.now()}`, src));
+    } catch {
+      svg = `<p class="hint">圖的語法有誤，只能顯示原始碼：</p><pre><code>${esc(src)}</code></pre>`;
+    }
+    out.innerHTML = `<p style="margin:0 0 8px">${esc(summary)}</p><div class="flow-svg">${svg}</div><p class="hint">這張圖是 Claude 讀完正文後整理的主幹，細節以正文為準。</p>`;
+  } catch (e) {
+    btn.disabled = false;
+    status.textContent = claudeFailed("畫圖", e);
+  }
 }
 
 async function openFile(path) {

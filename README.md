@@ -22,6 +22,8 @@ npm start
   6. 關聯：它點名誰、誰點名它
   7. 筆記和「我讀懂了」勾選（存在瀏覽器 localStorage）
 - **🀄 中文對照**：按一下，每段英文下面會出現繁體中文翻譯，看不懂的地方另外附「💡 白話」解釋。翻譯透過本機的 `claude -p` 執行（用你登入的 Claude Code 帳號，不需要 API key），結果存在 `cache/`，同一份 skill 只會翻一次。換模型：`READ_SKILL_MODEL=haiku npm start`。
+- **🧑‍💻 程式碼對照**：中文對照裡，跟寫程式有關的規則會附上「❌ 不照做／✅ 照做」的小段程式碼。
+- **🗺️ 流程圖**：在 skill 頁面按一下，Claude 會把整份 skill 畫成 Mermaid 流程圖（起點、分支、轉交其他 skill、何時完成）。同樣存在 `cache/`，畫圖需要連網載入 Mermaid。
 - **術語提示**：seam、subagent、diff、slop 等常見術語畫虛線底，滑鼠移上去會跳出中文解釋（`public/glossary.js` 可以自己加詞）。
 - 側欄可以篩選 plugin、呼叫方式（自動＋手動 / 只能手動 / 背景知識），也能搜尋。
 

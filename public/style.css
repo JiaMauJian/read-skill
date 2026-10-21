@@ -117,7 +117,11 @@ body.show-zh .zh { display: block; }
 body:not(.show-zh) .zh-row { display: none; }
 .zh-p { margin-top: 4px; color: var(--muted); font-size: 13.5px; }
 .zh-w { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 13.5px; }
-.zh-p b, .zh-w b { color: var(--ink); font-weight: 600; }
+.zh-c { margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 13.5px; }
+.zh-c pre { margin: 6px 0 0; font-size: 12.5px; }
+.flow-svg { overflow-x: auto; text-align: center; }
+.flow-svg svg { max-width: 100%; height: auto; }
+.zh-c b, .zh-p b, .zh-w b { color: var(--ink); font-weight: 600; }
 .src { font-size: 11px; padding: 0 6px; border-radius: 999px; cursor: help; }
 .src-orig { background: var(--green-soft); color: var(--green); }
 .src-guess { background: var(--violet-soft); color: var(--violet); }
