@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Read Skill</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="#/">📖 Read Skill <small>學會讀懂 Claude Code skill</small></a>
+    <nav>
+      <a href="#/" data-nav="guide">怎麼讀 skill</a>
+      <a href="#/browse" data-nav="browse">瀏覽 skill</a>
+      <button id="reload" title="重新掃描已安裝的 skill">↻ 重新掃描</button>
+    </nav>
+  </header>
+  <div class="layout">
+    <aside class="side">
+      <input id="search" type="search" placeholder="搜尋名稱或描述…">
+      <div id="plugins" class="chips"></div>
+      <div id="modes" class="chips"></div>
+      <div id="progress" class="progress"></div>
+      <ul id="list"></ul>
+    </aside>
+    <main id="main"></main>
+  </div>
+  <div id="drawer" class="drawer" hidden>
+    <div class="drawer-head"><strong id="drawer-title"></strong><span><button class="zh-toggle" id="drawer-zh"></button> <button id="drawer-close">✕</button></span></div>
+    <div id="drawer-status" class="drawer-status"></div>
+    <div id="drawer-body" class="md"></div>
+  </div>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "name": "read-skill",
+  "version": "0.1.0",
+  "description": "互動式教你讀懂 Claude Code skill（mattpocock-skills、pstack 等）",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node --test lib/"
+  }
+}
