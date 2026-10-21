@@ -22,6 +22,7 @@ pre code { padding: 0; background: none; }
 button { font: inherit; cursor: pointer; border: 1px solid var(--line); background: var(--panel); color: var(--ink); border-radius: 6px; padding: 4px 10px; }
 
 .top { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 20px; background: var(--panel); border-bottom: 1px solid var(--line); }
+.top-l { display: flex; align-items: center; gap: 10px; }
 .brand { font-weight: 700; color: var(--ink); font-size: 17px; }
 .brand small { font-weight: 400; color: var(--muted); margin-left: 8px; font-size: 13px; }
 .top nav { display: flex; gap: 14px; align-items: center; }
@@ -29,6 +30,8 @@ button { font: inherit; cursor: pointer; border: 1px solid var(--line); backgrou
 
 .layout { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 52px); }
 .side { border-right: 1px solid var(--line); padding: 14px; position: sticky; top: 52px; height: calc(100vh - 52px); overflow-y: auto; background: var(--panel); }
+body.side-off .layout { grid-template-columns: 1fr; }
+body.side-off .side { display: none; }
 .side input { width: 100%; padding: 7px 10px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; }
 .chip { font-size: 12px; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); }

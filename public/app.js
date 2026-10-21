@@ -576,6 +576,9 @@ $("#drawer-zh").addEventListener("click", () => {
   if (zhPref()) translateIn($("#drawer-body"), $("#drawer-status"));
 });
 setZh(store.get("zh", false));
+const setSide = (off) => { document.body.classList.toggle("side-off", off); store.set("sideOff", off); };
+setSide(store.get("sideOff", false));
+$("#side-btn").addEventListener("click", () => setSide(!document.body.classList.contains("side-off")));
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") $("#drawer").hidden = true; });
 $("#reload").addEventListener("click", async () => {
   skills = await (await fetch("/api/skills?reload=1")).json();
